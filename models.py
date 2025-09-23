@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, DateTime, ForeignKey, String, Table, Text, select
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, Text, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from settings import Session
 
@@ -18,8 +18,7 @@ class User(UserMixin, Base):
 
     is_admin: Mapped[bool] = mapped_column(default=False)
 
-
-    orders: Mapped[list["Orders"]] = relationship("Orders", back_populates="user")
+    orders: Mapped[list["Orders"]] = relationship("Orders", back_populates="user", cascade="all, delete-orphan")
     reservations: Mapped[list["Reservations"]] = relationship("Reservations", back_populates="user")
 
     def __repr__(self) -> str:
@@ -39,13 +38,18 @@ class User(UserMixin, Base):
             return user
 
 
-orders_menu = Table(
-    "orders_menu",
-    Base.metadata,
-    Column("order_id", ForeignKey("orders.id"), primary_key=True),
-    Column("menu_id", ForeignKey("menu.id"), primary_key=True),
-)
-          
+class OrderMenu(Base):
+    __tablename__ = "orders_menu"
+
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"), primary_key=True)
+    menu_id: Mapped[int] = mapped_column(ForeignKey("menu.id"), primary_key=True)
+    quantity: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+
+    order: Mapped["Orders"] = relationship(back_populates="order_items", lazy='selectin')
+    menu: Mapped["Menu"] = relationship(back_populates="menu_orders", lazy='selectin')  
+
+    def __repr__(self) -> str:
+        return f"menu: {self.menu.name}, Quantity: {self.quantity}"
 
 class Menu(Base):
     __tablename__ = "menu"
@@ -60,11 +64,10 @@ class Menu(Base):
     active: Mapped[bool] = mapped_column(default=True)
     category: Mapped[str] = mapped_column(String(100), nullable=True)
 
-    orders: Mapped[list["Orders"]] = relationship("Orders", secondary=orders_menu, back_populates="menu_items")
+    menu_orders: Mapped[list["OrderMenu"]] = relationship(back_populates="menu", lazy='selectin', cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
         return f"Menu: {self.id}, {self.name}"
-
 
 
 class Orders(Base):
@@ -73,22 +76,27 @@ class Orders(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    status: Mapped[str] = mapped_column(String(50), default="active")  # active, completed, canceled
 
     # many-to-many
-    menu_items: Mapped[list[Menu]] = relationship(
-        "Menu", secondary=orders_menu, back_populates="orders"
-    )
+    order_items: Mapped[list["OrderMenu"]] = relationship(back_populates="order", lazy='selectin', cascade="all, delete-orphan")
 
     user: Mapped["User"] = relationship("User", foreign_keys="Orders.user_id", back_populates="orders")
     
     def __repr__(self) -> str:
-        return f"Order: {self.id}, User ID: {self.user_id}"
+        return f"Order: {self.id},positions: {self.order_items}"
     
     @staticmethod
     def get(id_order: int):
         with Session() as session:
             order = session.scalar(select(Orders).filter(Orders.id == id_order))
             return order
+        
+    @classmethod
+    def total_price_order(cls, order: "Orders") -> float:
+        """Подсчитать общую стоимость заказа"""
+        return sum(item.menu.price * item.quantity for item in order.order_items)
+
 
 class Reservations(Base):
     __tablename__ = "reservations"

@@ -33,7 +33,7 @@ app.register_blueprint(menu.bp, url_prefix="/")
 app.register_blueprint(auth.bp, url_prefix="/auth")
 app.register_blueprint(admin_panel.bp, url_prefix="/admin")
 app.register_blueprint(errors.bp, url_prefix="/error")
-app.register_blueprint(orders.bp, url_prefix="/orders")
+app.register_blueprint(orders.bp, url_prefix="/account")
 
 if __name__ == "__main__":
     print(app.url_map)

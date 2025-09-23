@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+
+{% block title %}{{ menu_item.name }}{% endblock title %}
+
+{% block content %}
+
+    <h1>{{ menu_item.name }}</h1>
+    <img src="{{ menu_item.image_path }}" alt="{{ menu_item.name }}" width="500">
+    <p>{{ menu_item.description }}</p>
+    <p>Price: {{ menu_item.price }} грн.</p>
+    <p>Category: {{ menu_item.category }}</p>
+
+    {% if current_user.is_authenticated %}
+
+        <form action="{{ url_for('menu.add_to_order', item_id=menu_item.id) }}" method="post">
+        
+            <input type="number" name="quantity" value="1" min="1">
+            <button type="submit">Add to Order</button>
+        </form>
+    
+    {% endif %}
+
+{% endblock content %}

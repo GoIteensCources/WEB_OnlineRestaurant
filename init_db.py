@@ -1,4 +1,4 @@
-from models import Base, User, Menu, Orders, Reservations
+from models import Base, OrderMenu, User, Menu, Orders, Reservations
 from settings import  Session
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -25,7 +25,7 @@ def init_db():
         name = "Burger",
         description = "булка, котлета теляча, сир, помідор, соус, лук, зелень",
         price = 250, 
-        image_path = "burger.jpg",
+        image_path = "static/images_menu/burger.jpg",
         category = "fast food"
     )
     
@@ -33,17 +33,22 @@ def init_db():
         name = "shashlik",
         description = "телятина у маринаді з апельсинів",
         price = 500, 
-        image_path = "unnamed.jpg",
+        image_path = "static/images_menu/unnamed.jpg",
         category = "bbq"
     )
-    session.add_all([user, user2, menu1, menu2])
 
+
+    session.add_all([user, user2, menu1, menu2])    
+    session.flush()
+
+    order = Orders(user_id=user.id)
+    session.add(order)
     session.flush()
     
-    order = Orders(user_id=user.id)
-    order.menu_items.extend([menu1, menu2])
+    om1_1 = OrderMenu(order_id=order.id, menu_id=menu1.id, quantity=2)
+    om1_2 = OrderMenu(order_id=order.id, menu_id=menu2.id, quantity=4)
 
-    session.add(order)
+    session.add_all([om1_1, om1_2])
     session.commit()
 
     session.close()
