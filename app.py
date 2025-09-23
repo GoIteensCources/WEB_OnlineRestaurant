@@ -3,8 +3,8 @@ from flask import Flask,  render_template
 from settings import DatabaseConfig
 from flask_login import LoginManager
 from models import User
-from routes import auth, admin_panel, errors, menu
-from flask_wtf.csrf import CSRFProtect
+from routes import auth, admin_panel, errors, menu, orders
+# from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__)
@@ -33,7 +33,7 @@ app.register_blueprint(menu.bp, url_prefix="/")
 app.register_blueprint(auth.bp, url_prefix="/auth")
 app.register_blueprint(admin_panel.bp, url_prefix="/admin")
 app.register_blueprint(errors.bp, url_prefix="/error")
-
+app.register_blueprint(orders.bp, url_prefix="/orders")
 
 if __name__ == "__main__":
     print(app.url_map)

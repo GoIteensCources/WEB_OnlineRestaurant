@@ -21,18 +21,29 @@ def init_db():
                 hash_password=generate_password_hash("user"),
                 )
     
-    m1 = Menu(
-        name="Гункани з тунцем",
-        price=150.00,
-        rating=4,
-        description="4 шт., тунець, ікра тобіко, майонез",
-        image_path=None,
-        category="Гункани",
-        active=True
-        )
+    menu1 = Menu(
+        name = "Burger",
+        description = "булка, котлета теляча, сир, помідор, соус, лук, зелень",
+        price = 250, 
+        image_path = "burger.jpg",
+        category = "fast food"
+    )
+    
+    menu2 = Menu(
+        name = "shashlik",
+        description = "телятина у маринаді з апельсинів",
+        price = 500, 
+        image_path = "unnamed.jpg",
+        category = "bbq"
+    )
+    session.add_all([user, user2, menu1, menu2])
 
+    session.flush()
+    
+    order = Orders(user_id=user.id)
+    order.menu_items.extend([menu1, menu2])
 
-    session.add_all([user, user2, m1])  
+    session.add(order)
     session.commit()
 
     session.close()

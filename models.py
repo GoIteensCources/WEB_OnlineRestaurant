@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, String, Text, select
+from sqlalchemy import Column, DateTime, ForeignKey, String, Table, Text, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from settings import Session
 
@@ -37,7 +37,15 @@ class User(UserMixin, Base):
         with Session() as session:
             user = session.scalar(select(cls).filter(cls.username == username))
             return user
-        
+
+
+orders_menu = Table(
+    "orders_menu",
+    Base.metadata,
+    Column("order_id", ForeignKey("orders.id"), primary_key=True),
+    Column("menu_id", ForeignKey("menu.id"), primary_key=True),
+)
+          
 
 class Menu(Base):
     __tablename__ = "menu"
@@ -52,10 +60,11 @@ class Menu(Base):
     active: Mapped[bool] = mapped_column(default=True)
     category: Mapped[str] = mapped_column(String(100), nullable=True)
 
-    orders: Mapped[list["Orders"]] = relationship("Orders", back_populates="orders_items")
+    orders: Mapped[list["Orders"]] = relationship("Orders", secondary=orders_menu, back_populates="menu_items")
     
     def __repr__(self) -> str:
         return f"Menu: {self.id}, {self.name}"
+
 
 
 class Orders(Base):
@@ -63,15 +72,23 @@ class Orders(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    order_list: Mapped[list["Menu"]] = mapped_column(ForeignKey("menu.id"), nullable=False)  # JSON string of ordered items
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
+    # many-to-many
+    menu_items: Mapped[list[Menu]] = relationship(
+        "Menu", secondary=orders_menu, back_populates="orders"
+    )
 
     user: Mapped["User"] = relationship("User", foreign_keys="Orders.user_id", back_populates="orders")
-    orders_items: Mapped[list["Menu"]] = relationship("Menu", foreign_keys="Orders.order_list", back_populates="orders")
-
+    
     def __repr__(self) -> str:
         return f"Order: {self.id}, User ID: {self.user_id}"
+    
+    @staticmethod
+    def get(id_order: int):
+        with Session() as session:
+            order = session.scalar(select(Orders).filter(Orders.id == id_order))
+            return order
 
 class Reservations(Base):
     __tablename__ = "reservations"
