@@ -1,9 +1,10 @@
-from flask import Flask,  render_template
-
-from settings import DatabaseConfig
+from flask import Flask, render_template
 from flask_login import LoginManager
+
 from models import User
-from routes import auth, admin_panel, errors, menu, orders
+from routes import admin_panel, auth, errors, menu, orders
+from settings import DatabaseConfig
+
 # from flask_wtf.csrf import CSRFProtect
 
 
@@ -11,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object(DatabaseConfig)
 
 login_manager = LoginManager()
-login_manager.login_view = "login" # type: ignore
+login_manager.login_view = "login"  # type: ignore
 login_manager.init_app(app)
 
 # csrf = CSRFProtect(app)

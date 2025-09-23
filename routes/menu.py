@@ -1,14 +1,20 @@
-
-from flask import abort, render_template, request, redirect, session, url_for, flash
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_login import login_required
 from sqlalchemy import select
+
 from models import Menu, User
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
 from settings import Session
-from flask import Blueprint
 
-
-bp = Blueprint('menu', __name__)
+bp = Blueprint("menu", __name__)
 
 
 @bp.route("/menu")
@@ -16,8 +22,13 @@ def list_menu_items():
     with Session() as session:
         menu_items = session.scalars(select(Menu))
 
-        menu_items_list = [ {"id": i.id, 'name': i.name, 'price': i.price, "image_path": i.image_path} for i in menu_items]
-    return render_template("menu/list.html", menu_items=menu_items_list, title="Menu IZI")
+        menu_items_list = [
+            {"id": i.id, "name": i.name, "price": i.price, "image_path": i.image_path}
+            for i in menu_items
+        ]
+    return render_template(
+        "menu/list.html", menu_items=menu_items_list, title="Menu IZI"
+    )
 
 
 @bp.route("/<int:item_id>")
@@ -39,10 +50,9 @@ def add_to_order(item_id):
         basket[str(item_id)] = quantity
         session["basket"] = basket
     else:
-        
+
         basket = session.get("basket", {})
         basket[str(item_id)] = quantity
 
     flash(f"позицію {item_id} додано до кошика")
     return redirect(url_for("menu.details_menu_item", item_id=item_id))
-

@@ -1,27 +1,26 @@
-from functools import wraps
-import uuid
-from flask import abort, render_template, request, redirect, url_for, flash
-from flask_login import current_user
-from models import Menu
-
-from settings import Session, config
-from flask import Blueprint
-
 import os
+import uuid
+from functools import wraps
 
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user
 
-bp = Blueprint('admin', __name__)
+from models import Menu
+from settings import Session, config
+
+bp = Blueprint("admin", __name__)
 
 
 def admin_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
-            return abort(401)   # Unauthorized
+            return abort(401)  # Unauthorized
         if not getattr(current_user, "is_admin", False):
-            return abort(403)   # Forbidden
+            return abort(403)  # Forbidden
 
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -39,7 +38,7 @@ def create_menu():
         price = request.form.get("price")
         description = request.form.get("description")
         category = request.form.get("category")
-        
+
         image = request.files.get("image")
 
         if image:
@@ -63,5 +62,4 @@ def create_menu():
 
         flash("Menu created successfully!", "success")
         return redirect(url_for("admin.create_menu"))
-    return render_template("administrate/create_menu.html",  title="Create Menu Item")
-
+    return render_template("administrate/create_menu.html", title="Create Menu Item")
