@@ -2,7 +2,6 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from flask_login import current_user, login_required
 from sqlalchemy import select
 
-
 from models import Menu, OrderMenu, Orders, User
 from settings import Session
 

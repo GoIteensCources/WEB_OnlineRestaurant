@@ -6,6 +6,9 @@
 {% block content %}
 
     <h1>Історія замовлень</h1>
-    {{orders}}
+    {% for order  in  orders%}
+        <p>{{order}}</p>
+        <a href="{{ url_for('orders.order_details',order_id = order.id)}}">Детальніше</a>
+    {% endfor %}
 
 {% endblock content %}

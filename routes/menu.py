@@ -20,7 +20,7 @@ bp = Blueprint("menu", __name__)
 @bp.route("/menu")
 def list_menu_items():
     with Session() as session:
-        menu_items = session.scalars(select(Menu))
+        menu_items = session.scalars(select(Menu).filter_by(active=True))
 
         menu_items_list = [
             {"id": i.id, "name": i.name, "price": i.price, "image_path": i.image_path}
