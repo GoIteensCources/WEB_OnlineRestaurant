@@ -40,9 +40,8 @@ def admin_panel():
             elif "delete_position" in request.form and menu_pos:
                 session.delete(menu_pos)
 
-            elif "change_position" in request.form and menu_pos:
-                redirect(url_for("update_menu", pos_id=pos_id))
-
+            # elif "change_position" in request.form and menu_pos:
+            #     redirect(url_for("admin.update_menu", pos_id=pos_id))
             session.commit()
 
     with Session() as session:
@@ -89,10 +88,13 @@ def create_menu():
 @bp.route("/update_menu/<int:pos_id>", methods=["GET", "POST"])
 @admin_required
 def update_menu(pos_id):
+
     with Session() as session:
         stmt = select(Menu).filter_by(id=pos_id)
         # stmt = select(Menu).where(Menu.id == pos_id)
         menu_pos = session.scalar(stmt)
+
+
 
     return render_template(
         "administrate/update_menu.html", title="Change Menu Item", position=menu_pos

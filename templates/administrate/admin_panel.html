@@ -31,8 +31,9 @@
                 <input type="hidden" name="pos_id" value="{{ pos.id }}">
                 <button type="submit" name="change_status">Змінити статус</button>
                 <button type="submit" name="delete_position">Видалити</button>
-                <button type="submit" name="change_position">Змінити</button>
+                <!-- <button type="submit" name="change_position">Змінити</button> -->
             </form>
+            <a href="{{url_for('admin.update_menu', pos_id=pos.id)}}">Змінити</a>
         </td>
     </tr>
     {% endfor %}
